@@ -1,0 +1,46 @@
+{
+	"__default__" :
+	{
+	  	"queue" : "general",
+		"mem": "24",
+		"threads" : 12,
+		"time" : "3:00",
+		"extra" : "",
+		"latency": "10"
+	},
+	"splitChrom" :
+	{
+	  	"queue" : "general",
+		"mem": "36",
+		"threads" : 12,
+		"time" : "2:00"
+	},
+	"addHeader" :
+	{
+	  	"queue" : "general",
+		"mem": "24",
+		"threads" : 8,
+		"time" : "2:00"
+	},
+	"per_read_aggregate" :
+	{
+	  	"queue" : "general",
+		"mem": "22",
+		"threads" : 12,
+		"time" : "3:00"
+	},
+	"gather_files" :
+	{
+	  	"queue" : "general",
+		"mem": "36",
+		"threads" : 14,
+		"time" : "1:00"
+	},
+	"plugNplay_plots_TE" :
+	{
+	  	"queue" : "general",
+		"mem": "24",
+		"threads" : 8,
+		"time" : "1:00"
+	}
+}

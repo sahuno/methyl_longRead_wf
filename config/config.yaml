@@ -1,0 +1,82 @@
+splitChr_script: scripts/split_ONT_perChrom.sh
+qc_Script: scripts/R/aggregate_per_read_5mC_5hmc_main.r
+promoter_plotsR: scripts/R/gene_promoters_with_encode.r
+TE_plotsR: scripts/R/plot_methylation_TransposableElements.r
+combineStats_files: scripts/R/mergeStats_ONT.r
+plug_play_plotsTE_R: scripts/R/plugNplay_any_granges.r
+chrs:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
+      - 16
+      - 17
+      - 18
+      - 19
+      - 20
+      - 21
+      - 22
+      - X
+      - Y
+
+# chrs:
+#       1
+#       2
+#       3
+#       4
+#       5
+#       6
+#       7
+#       8
+#       9
+#       10
+#       11
+#       12
+#       13
+#       14
+#       15
+#       16
+#       17
+#       18
+#       19
+#       20
+#       21
+#       22
+#       X
+#       Y
+
+#chrs: 1
+      # - 2
+      # - 3
+      # - 4
+      # - 5
+      # - 6
+      # - 7
+      # - 8
+      # - 9
+      # - 10
+      # - 11
+      # - 12
+      # - 13
+      # - 14
+      # - 15
+      # - 16
+      # - 17
+      # - 18
+      # - 19
+      # - 20
+      # - 21
+      # - 22
+      # - X
+      # - Y

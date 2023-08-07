@@ -1,0 +1,12 @@
+samples:
+    Spectrum-OV-044_N: /work/greenbaum/projects/ont_pipeline/projects/SPECTRUM_MTHY/results/methylation/megalodon/Spectrum-OV-044_N/per_read_modified_base_calls.txt
+    Spectrum-OV-044_T: /work/greenbaum/projects/ont_pipeline/projects/SPECTRUM_MTHY/results/methylation/megalodon/Spectrum-OV-044_T/per_read_modified_base_calls.txt
+    Spectrum-OV-009_N: /work/greenbaum/projects/ont_pipeline/projects/SPECTRUM_MTHY/results/methylation/megalodon/Spectrum-OV-009_N/per_read_modified_base_calls.txt
+    Spectrum-OV-009_T: /work/greenbaum/projects/ont_pipeline/projects/SPECTRUM_MTHY/results/methylation/megalodon/Spectrum-OV-009_T/per_read_modified_base_calls.txt
+    BRCA_13135_P_1: /juno/work/greenbaum/users/ahunos/rotation/data/brca/per_read_modified_base_calls/BRCA_13135_P_1/BRCA_13135_P_1_per_read_modified_base_calls.txt
+    BRCA_13135_P_2: /juno/work/greenbaum/users/ahunos/rotation/data/brca/per_read_modified_base_calls/BRCA_13135_P_2/BRCA_13135_P_2_per_read_modified_base_calls.txt
+    BRCA_13135_P_3: /juno/work/greenbaum/users/ahunos/rotation/data/brca/per_read_modified_base_calls/BRCA_13135_P_3/BRCA_13135_P_3_per_read_modified_base_calls.txt
+    BRCA_13135_P_4: /juno/work/greenbaum/users/ahunos/rotation/data/brca/per_read_modified_base_calls/BRCA_13135_P_4/BRCA_13135_P_4_per_read_modified_base_calls.txt
+    BRCA_13135_P_5: /juno/work/greenbaum/users/ahunos/rotation/data/brca/per_read_modified_base_calls/BRCA_13135_P_5/BRCA_13135_P_5_per_read_modified_base_calls.txt
+    BRCA_13135_P_6: /juno/work/greenbaum/users/ahunos/rotation/data/brca/per_read_modified_base_calls/BRCA_13135_P_6/BRCA_13135_P_6_per_read_modified_base_calls.txt
+# cat /work/greenbaum/projects/ont_pipeline/projects/SPECTRUM_MTHY/results/methylation/megalodon/Spectrum-OV-009_N/per_read_modified_base_calls.txt | cut -f2 | sort | uniq
