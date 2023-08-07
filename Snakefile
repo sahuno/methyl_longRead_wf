@@ -103,7 +103,8 @@ rule gene_promoters:
         stats="median",
         minReads=3,
         Methyl_cutoff=0.90,
-        results_dir="results/gene_promoters/{samples}/chr{chr}"
+        results_dir="results/gene_promoters/{samples}/chr{chr}",
+        promoter_file=config["promoter_file"]
         # chromosomes=lambda wildcards: config["chrs"][wildcards.chrs],
     log:
        "logs/gene_promoters/{samples}/{samples}.chr{chr}.log"
@@ -114,6 +115,7 @@ Rscript {params.promoter_scripts} \
         --nReads {params.minReads} \
         --methyl_percent {params.Methyl_cutoff} \
         --input_file {input.infile} \
+        --input_promoter {params.promoter_file} \
         --plots_pdf {output.plot_pdf} \
         --plots_rds {output.plot_rds} \
         --chrom {wildcards.chr} \

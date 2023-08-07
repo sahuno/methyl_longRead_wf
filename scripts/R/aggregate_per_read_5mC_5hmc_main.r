@@ -59,6 +59,8 @@ df_perReadModifiedBases <- df_perReadModifiedBases[!chrm %like% "_"][mod_base %l
                         by=list(chrm, pos, strand, read_id)][,
                         list(number_reads=.N, mean_Prob_Meth_perSite = mean(PrM), median_Prob_Meth_perSite = median(PrM)),by=list(chrm, pos, strand)]
 
+chrmTag <- unique(df_perReadModifiedBases$chrm) #get unique chrm
+
 
 message("size aggregated reads summary stats")
 dim(df_perReadModifiedBases)
@@ -84,14 +86,14 @@ df_perReadModifiedBases <- melt(`df_perReadModifiedBases`, measure.vars = c("mea
 plt_density_stats_meth <- df_perReadModifiedBases %>% ggplot(aes(x=value, fill = statistic)) + 
                                                 geom_density(alpha = 0.5) + 
                                                 theme(legend.position="bottom") + 
-                                                labs(title = "density of mean and median of prob of methylated aggregated per site")
+                                                labs(title = paste0("density of mean and median of prob of methylated aggregated per site - chr", chrmTag ))
 ggsave(plt_density_stats_meth, file=opt$plot_density_mod_prob)
 
 plt_histo_stats_meth <- df_perReadModifiedBases %>% ggplot(aes(x=value, fill = statistic)) + 
                   geom_histogram(alpha = 0.5, position="identity") +
                   scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
                   labels = scales::trans_format("log10", scales::math_format(expr = 10^.x))) + 
-                  labs(title = "histogram of mean and median of prob of methylated aggregated per site")+
+                  labs(title = paste0("histogram of mean and median of prob of methylated aggregated per site - chr", chrmTag))+
                   theme(legend.position="bottom")
 
 ggsave(plt_histo_stats_meth, file=opt$plot_hist_mod_prob)
@@ -100,7 +102,7 @@ ggsave(plt_histo_stats_meth, file=opt$plot_hist_mod_prob)
 plt_ecdf_stats_meth <- df_perReadModifiedBases %>% 
                             ggplot(aes(x=value, color = statistic)) + 
                                 stat_ecdf() + 
-                                    labs(title = "ecdf of mean and median of prob of methylated aggregated per site") +
+                                    labs(title = paste0("ecdf of mean and median of prob of methylated aggregated per site - chr", chrmTag)) +
                                         theme(legend.position="bottom")
 ggsave(plt_ecdf_stats_meth, file=opt$plot_ecdf_mod_prob)
 
@@ -110,7 +112,7 @@ plt_density_stats_reads <- df_perReadModifiedBases %>% ggplot(aes(x=number_reads
                                                 theme(legend.position="bottom") +
                                                 scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
                                                 labels = scales::trans_format("log10", scales::math_format(expr = 10^.x))) + 
-                                                labs(title = "Density of number of aggregated reads per site") 
+                                                labs(title = paste0("Density of number of aggregated reads per site - chr", chrmTag)) 
 ggsave(plt_density_stats_reads, file=opt$plot_density_nReads)
 
 
@@ -121,7 +123,7 @@ plt_histo_stats_reads <- df_perReadModifiedBases %>% ggplot(aes(x=number_reads))
                   scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
                   labels = scales::trans_format("log10", scales::math_format(expr = 10^.x))) +
                   theme(legend.position="bottom") + 
-                  labs(title = "histogram of number of aggregated reads per site") 
+                  labs(title = paste0("histogram of number of aggregated reads per site - chr", chrmTag)) 
 ggsave(plt_histo_stats_reads, file=opt$plot_hist_nReads)
 
 
@@ -130,7 +132,7 @@ plt_ecdf_stats_reads <- df_perReadModifiedBases %>%
                     stat_ecdf() + 
                     scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
                   labels = scales::trans_format("log10", scales::math_format(expr = 10^.x))) +
-                    labs(title = "ecdf of number of aggregated reads per site") +
+                    labs(title = paste0("ecdf of number of aggregated reads per site - chr", chrmTag)) +
                     theme(legend.position="bottom")  
 ggsave(plt_ecdf_stats_reads, file=opt$plot_ecdf_nReads)
 

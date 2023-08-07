@@ -8,6 +8,7 @@ library(plyranges)
 option_list <- list(
     make_option(("--chrom"), type="character", default="6",help ="chromosome to work on"),
    make_option(("--input_file"), type = "character", default="/juno/work/greenbaum/users/ahunos/methyl_SPECTRUM/scripts/workflows/spectrum_ont_methyl/results/per_read_aggregate/BRCA_13135_P_1/chr6/data/BRCA_13135_P_1.chr6.data_aggregate_stats.txt"),
+   make_option(("--input_promoter"), type = "character", default="/juno/work/greenbaum/users/ahunos/apps/methylONT/data/gene_promoters_encode1kb_proteinCoding.rda"),
     make_option(("--nReads"), type="integer", default=3,help ="threshold for number minimum numvber reads per site"),
     make_option(("--stats2Use"), type="character", default="median",help ="use mean or median aggreagate prob per site"),
     make_option(("--methyl_percent"), type="numeric", default=0.9,help ="threshold for site to be called methylated, used in combination with nReads"),
@@ -44,8 +45,10 @@ DT_subj <- makeGRangesFromDataFrame(DT_cp, start.field = "pos", end.field = "pos
 ######################main promoter scripts ################
 ##############################################################
 #read in gene promoters and split
-load("/juno/work/greenbaum/users/ahunos/apps/methylONT/data/gene_promoters_encode1kb.rda")
+load(opt$input_promoter)
 
+#gene_promoters_encode1kb <- gene_promoters_encode1kb[gene_promoters_encode1kb$biotype == "protein_coding"]
+#unique(gene_promoters_encode1kb$biotype)
 
 #filter only for chr of interest
 if(!is.null(opt$chrom)){
@@ -98,10 +101,6 @@ ov_methyl_prom_dt <- ov_methyl_prom_dt[sapply(ov_methyl_prom_dt, function(x) dim
 #save plot data- prefiltering
 message("saving overlaps Data as RDS")
 saveRDS(ov_methyl_prom_dt, file = paste0(opt$overlaps_rds))
-# lapply(ov_methyl_prom_dt, check_non_empty_dt)
-
-# all(dim(ov_methyl_prom_dt[[1]]))
-#dt_test2[,Meth_or_UnMeth := data.table::fcase(methylation_percentage_5mC_5hmC >= methyl_percentage_threshold & number_reads >= methyl_numb_reads_threshold,"M" , default = "U")]
 
 #test data
 # dtest <- copy(ov_methyl_prom_dt[["OR1I1_ENSG00000094661.3"]])
@@ -120,8 +119,7 @@ saveRDS(ov_methyl_prom_dt, file = paste0(opt$overlaps_rds))
     uniq_keys <- function(x){
         length(unique(x[, key]))
     }
-#uniq_keys(DT, "key")
-#uniq_keys(DT[[1]])
+
 #functiom to check if there are valid stats to plot
     valid_stats <- function(x){
         #any(x[, !is.na(..target_cols)])
@@ -273,38 +271,8 @@ fwrite(methyl_rate_promoters_dt, file = paste0(opt$methyl_metrics_promo_data), s
 # ggsave(plt_ggpairs, file="test_methylation_rate_promoters.pdf", width = 12, height=7)
 
 
-
-
-
-
-
-
-
-#test
-# gr <- GRanges(seqnames = "chr6", strand = c("*", "*", "*"),
-#               ranges = IRanges(start = c(1,3,5), width = 1000))
-# values(gr) <- DataFrame(score = c(0.1, 0.5, 0.3))
-# gr
-#grt <- start(Biostrings::matchPattern("CG", BSgenome.Hsapiens.UCSC.hg38::Hsapiens[[x]]))
-#Biostrings::countPattern("CG", BSgenome.Hsapiens.UCSC.hg38::Hsapiens[[x]])
-# BSgenome.Hsapiens.UCSC.hg38::Hsapiens[[x]]
-
 ##questions: do number of cpgs correlate with promoter methylation?
 ##questions: do number of cpgs correlate with promoter methylation entropy?
 ##questions: do number of cpgs correlate with proportion of methylated cpgs?
 ##questions: do proportion of methylated cpgs correlate with gene expression?
 
-
-
-
-# library(BSgenome.Hsapiens.UCSC.hg38)
-# lapply(gr, function(x) Biostrings::countPattern("CG", BSgenome.Hsapiens.UCSC.hg38::Hsapiens[[x]]))
-# BSgenome.Hsapiens.UCSC.hg38::Hsapiens[[gr[1]]]
-# library(BSgenome.Hsapiens.UCSC.hg38)
-# gr_pro <- dput(head(gene_promoters_encode1kb_chr_subset[,c("symbol", "key")], 3))
-# lapply(gr_pro, function(x) Biostrings::countPattern("CG", BSgenome.Hsapiens.UCSC.hg38::Hsapiens[x]))
-# #this is the same as above
-# ov_gr_prom <- getSeq(Hsapiens, gr_pro)
-# Biostrings::vcountPattern("GC", ov_gr_prom)
-
-# BSgenome.Hsapiens.UCSC.hg38::Hsapiens[gr_pro]

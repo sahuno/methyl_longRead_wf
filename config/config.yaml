@@ -1,6 +1,7 @@
 splitChr_script: scripts/split_ONT_perChrom.sh
 qc_Script: scripts/R/aggregate_per_read_5mC_5hmc_main.r
 promoter_plotsR: scripts/R/gene_promoters_with_encode.r
+promoter_file: /juno/work/greenbaum/users/ahunos/apps/methylONT/data/gene_promoters_encode1kb_proteinCoding.rda
 TE_plotsR: scripts/R/plot_methylation_TransposableElements.r
 combineStats_files: scripts/R/mergeStats_ONT.r
 plug_play_plotsTE_R: scripts/R/plugNplay_any_granges.r
