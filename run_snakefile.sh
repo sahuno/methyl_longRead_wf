@@ -2,7 +2,7 @@
 
 # Run snakemake
 snakemake --jobname 's.{jobid}.{rulename}' \
-	--snakefile Snakefile_agg_stats_ONT.smk \
+	--snakefile Snakefile \
 	--keep-going \
 	--reason \
 	--printshellcmds \
@@ -13,9 +13,10 @@ snakemake --jobname 's.{jobid}.{rulename}' \
 	--cluster-config config/cluster.json \
 	--cluster "bsub -q {cluster.queue} -n {cluster.threads} -W {cluster.time} -M{cluster.mem} -R\"span[hosts=1] select[mem>{cluster.mem}] rusage[mem={cluster.mem}]\" {cluster.extra} -o out.txt -e err.txt"
 # --unlock
-#--cluster "bsub -q {cluster.queue} -n {cluster.threads} -W {cluster.time} -M{cluster.mem} -R\"span[hosts=1] select[mem>{cluster.mem}] rusage[mem={cluster.mem}]\" {cluster.extra} -o out.txt -e err.txt"
+
+#use `-R` to run specific rules
 #	-R gather_files \
-	# -R per_read_aggregate \
+# -R per_read_aggregate \
 #	-R plugNplay_plots_TE \
 #	-R gene_promoters \
 #	-R per_read_aggregate \
