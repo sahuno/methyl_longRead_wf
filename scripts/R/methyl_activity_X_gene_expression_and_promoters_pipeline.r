@@ -11,7 +11,7 @@ library(tidyverse)
 
 
 option_list <- list(
-   make_option(("--path_methyl_rate"), type = "character", default="/juno/work/greenbaum/users/ahunos/methyl_SPECTRUM/scripts/workflows/spectrum_ont_methyl/results/gather_files"),
+   make_option(("--path_methyl_rate"), type = "character", default="/juno/work/greenbaum/users/ahunos/methyl_SPECTRUM/scripts/workflows/methyl_PARP_BrCan/results/gather_files"),
    make_option(("--input_expression"), type = "character", default="/juno/work/greenbaum/users/ahunos/rotation/data/dds_normalized_cnts_parp_inhibitor.tsv")
    )
 
@@ -23,7 +23,10 @@ opt <- parse_args(OptionParser(option_list = option_list))
 ##########################################################################################################################
 ### step 1: read methylation data
 #path_methyl_rate <- "/juno/work/greenbaum/users/ahunos/methyl_SPECTRUM/scripts/workflows/spectrum_ont_methyl/results/gather_files"
-methyl_rate_files <- list.files(opt$path_methyl_rate, full.names = TRUE, pattern = "*.data_methylation_gene_promoters_metrics_all_chroms.txt$", recursive = TRUE)##read multiple files
+methyl_rate_files <- list.files(opt$path_methyl_rate, 
+                                full.names = TRUE, 
+                                pattern = "*.data_methylation_gene_promoters_metrics_all_chroms.txt$",
+                                recursive = TRUE)##read multiple files
 methyl_rate_dt_ls <- lapply(methyl_rate_files, function(x) fread(x)) #read merged methylation activity data
 
 lapply(methyl_rate_dt_ls, function(x) setnames(x, c("key", "median_promoter_methyl" , "methyl_promoter_entropy", 
@@ -38,7 +41,9 @@ methyl_rate_dt <- rbindlist(methyl_rate_dt_ls, idcol = "sample")
 
 
 
-
+#methyl_rate_dt[expr_dt_melt, ]
+methyl_rate_dt[,`:=`(ensgene = gsub(".*ENSG","ENSG",key))][,`:=`(ensgene = gsub("\\+|\\-*$","",ensgene))]
+setkey(methyl_rate_dt, ensgene, sample)
 
 
 ##########################################################################################################################
@@ -49,41 +54,41 @@ methyl_rate_dt <- rbindlist(methyl_rate_dt_ls, idcol = "sample")
 
 
 
-readExpData <- function(path=NULL, gene_col = "gene.id", rename_samples = FALSE, old_names=c("P_1", "P_2","P_3","P_4","P_5","P_6"), new_names=c("BRCA_13135_P_1", "BRCA_13135_P_2","BRCA_13135_P_3","BRCA_13135_P_4","BRCA_13135_P_5","BRCA_13135_P_6")){
+readExpData <- function(path=NULL, gene_col = "gene.id", methyl_rate_data=methyl_rate_dt,
+                    rename_samples = TRUE, 
+                    old_names=c("P_1", "P_2","P_3","P_4","P_5","P_6"), 
+                    new_names=c("BRCA_13135_P_1", "BRCA_13135_P_2","BRCA_13135_P_3","BRCA_13135_P_4","BRCA_13135_P_5","BRCA_13135_P_6")){
 expr_dt <- fread(path)
 #names(expr_dt)[6] <- "gene.id"
-#print(get(gene_col))
-
-if(any(names(expr_dt) %like% "gene.id")){
+#print(gene_col)
+if(!any(names(expr_dt) %like% gene_col)){
   print("renaming gene column as ensgene; thus esemble gene id.version number")
-  setnames(expr_dt, gene_col, "ensgene")
+  setnames(expr_dt, get(gene_col), "ensgene")
   }
-
 #optional rename sample  names
 if(rename_samples){
     #expr_dt_melt[,`:=`(sample = paste0("BRCA_13135_", sample))]
     setnames(expr_dt, old_names, new_names, skip_absent=TRUE)
 }
 
-
+#print(head(expr_dt))
 #convert expression data to long format
 expr_dt_melt <- melt(expr_dt, id.vars = "ensgene", variable.name = "sample", value.name = "Gene_expr")
 #unique(expr_dt_melt$sample)
 setkey(expr_dt_melt, ensgene, sample)
-
 #merge expression and methylation data
-#methyl_rate_dt[expr_dt_melt, ]
-methyl_rate_dt[,`:=`(ensgene = gsub(".*ENSG","ENSG",key))][,`:=`(ensgene = gsub("\\+|\\-*$","",ensgene))]
-setkey(methyl_rate_dt, ensgene, sample)
 
-methyl_rate_and_exprs_dt <- methyl_rate_dt[expr_dt_melt, nomatch = NULL] #merge on methylation rate and gene expression
+
+print(head(expr_dt))
+print(head(methyl_rate_data))
+methyl_rate_and_exprs_dt <- methyl_rate_data[expr_dt_melt, nomatch = NULL] #merge on methylation rate and gene expression
 #methyl_rate_dt[198086,]
 key(methyl_rate_and_exprs_dt)
 setkey(methyl_rate_and_exprs_dt, ensgene, sample)
 return(methyl_rate_and_exprs_dt)
 }
 
-t <- readExpData(path=opt$input_expression, gene_col = "ensgene")
+methyl_rate_and_exprs_dt <- readExpData(path=opt$input_expression, gene_col = "ensgene")
 
 
 #find correlation between genes and methylation
