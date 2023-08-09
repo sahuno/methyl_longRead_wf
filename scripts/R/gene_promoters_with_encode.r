@@ -45,9 +45,9 @@ DT_subj <- makeGRangesFromDataFrame(DT_cp, start.field = "pos", end.field = "pos
 ######################main promoter scripts ################
 ##############################################################
 #read in gene promoters and split
-load(opt$input_promoter)
 
-gene_promoters_encode1kb <- gene_promoters_encode1kb_proteinCoding
+gene_promoters_encode1kb <- readRDS(opt$input_promoter)
+#gene_promoters_encode1kb <- gene_promoters_encode1kb_proteinCoding
 #gene_promoters_encode1kb <- gene_promoters_encode1kb[gene_promoters_encode1kb$biotype == "protein_coding"]
 #unique(gene_promoters_encode1kb$biotype)
 
@@ -200,6 +200,11 @@ message("computing methylation statistics per gene promoter in chr", opt$chrom)
 #function to compute entropy
 compute_entropy <- function(Px){
 methyl_entropy <- -sum(Px * log2(Px))
+#log()
+
+#methyl_entropy <- mean(sum(Px * log2(Px)),na.rm = TRUE)
+
+#methyl_entropy <- 
 return(methyl_entropy)
 }
 
