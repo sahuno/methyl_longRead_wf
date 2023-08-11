@@ -18,4 +18,7 @@ $ sh run_snakefile.sh
 
 ## QC 
 there are a number of qc available
-1. depth of sequencing per CpG site
+1. calculate depth at each CpG site
+```
+$ sh samtools_depth_qc.sh '/path/to/megalodon_results_dir' '/path/to/CpG_sites_0based_mm10.bed'
+```
