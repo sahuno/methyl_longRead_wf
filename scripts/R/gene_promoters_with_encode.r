@@ -208,6 +208,14 @@ methyl_entropy <- -sum(Px * log2(Px))
 return(methyl_entropy)
 }
 
+compute_geom_mean <- function(x){
+  #compute geometric mean of methylation values
+  gm <- exp(mean(log(x[x > 0]),na.rm=TRUE))
+  return(gm)
+}
+
+
+
 ##############################################################
 #Function to compute average methylation per gene promoter
 methylation_prom <- function(dat_in){
@@ -216,6 +224,7 @@ methylation_prom <- function(dat_in){
     promoter_methyl_rate <- dat_in[,Meth_or_UnMeth := 
                                     data.table::fcase(statistic >= opt$methyl_percent & number_reads >= opt$nReads,"M" , default = "U")][
                                         ,.(median_promoter_methyl = median(statistic, na.rm=TRUE), 
+                                        geom_mean_promoter_methyl = compute_geom_mean(statistic), 
                                             methyl_promoter_entropy = compute_entropy(statistic), 
                                             nCpGs_promoter_observed = length(statistic),
                                             nGCs_promoter_expected = unique(numGCs) * 2,
