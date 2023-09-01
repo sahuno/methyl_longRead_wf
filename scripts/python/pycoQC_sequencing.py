@@ -15,6 +15,8 @@ import pycoQC
 #python /juno/work/greenbaum/users/ahunos/methyl_SPECTRUM/scripts/workflows/methyl_longRead_wf/scripts/python/pycoQC_sequencing.py /work/greenbaum/projects/ont_pipeline/projects/DIVYA_BRCA/results/methylation/megalodon/
 # '/juno/work/greenbaum/projects/TRI_EPIGENETIC/megalodon/'.split("/")[-2]
 
+#python /juno/work/greenbaum/users/ahunos/methyl_SPECTRUM/scripts/workflows/methyl_longRead_wf/scripts/python/pycoQC_sequencing.py /data/greenbaum/projects/ONT/projects/RERUN/TRI_EPIGENETIC/results/methylation/megalodon
+
 
 #set paths to meagalodon data
 #dir_parent = '/juno/work/greenbaum/projects/TRI_EPIGENETIC/megalodon/'

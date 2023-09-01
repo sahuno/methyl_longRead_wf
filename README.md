@@ -32,3 +32,18 @@ there are a number of qc available
 ```
 $ sh samtools_depth_qc.sh '/path/to/megalodon_results_dir' '/path/to/CpG_sites_0based_mm10.bed'
 ```
+
+### notes on scripts
+scripts/R:
+aggregate_per_read_5mC_5hmc_main.r  - gather reads per site, calc mean/median methylation for 5mc
+methyl_activity_X_gene_expression_and_promoters_pipeline.r - associate gene expressin with promoters
+dseq2_analysis.r - dseq2 analysis                    
+methylation_activity_gene_expression_and_promoters.r
+files_mod_bases2yaml.yaml           
+plot_methylation_TransposableElements.r
+gene_promoters_with_encode.r        
+plot_samtools_depth_coverage.r
+make_sample_yaml.r                  
+plugNplay_any_granges.r
+mergeStats_ONT.r                    
+promoter_methylation_knownGenes.r
