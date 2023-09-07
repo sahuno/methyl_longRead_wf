@@ -12,11 +12,11 @@ library(tidyverse)
 
 option_list <- list(
    make_option(("--path_methyl_rate"), type = "character", default="/juno/work/greenbaum/users/ahunos/methyl_SPECTRUM/scripts/workflows/methyl_PARP_BrCan/results/gather_files"),
-   make_option(("--input_expression"), type = "character", default="/juno/work/greenbaum/users/ahunos/rotation/data/dds_normalized_cnts_parp_inhibitor.tsv")
-   )
+   make_option(("--input_expression"), type = "character", default="/juno/work/greenbaum/users/ahunos/apps/RNA-seq_DiffExpr/data/condition_PARPi_vs_CTRL/DESeq2_rlog_Transform_BlindTRUE_condition_PARPi_vs_CTRL.tsv") #results would look this way now
+#    make_option(("--input_expression"), type = "character", default="/juno/work/greenbaum/users/ahunos/rotation/data/dds_normalized_cnts_parp_inhibitor.tsv")
+                )
 
 opt <- parse_args(OptionParser(option_list = option_list))
-
 
 
 
@@ -29,6 +29,7 @@ methyl_rate_files <- list.files(opt$path_methyl_rate,
                                 recursive = TRUE)##read multiple files
 methyl_rate_dt_ls <- lapply(methyl_rate_files, function(x) fread(x)) #read merged methylation activity data
 
+#add header to file
 lapply(methyl_rate_dt_ls, function(x) setnames(x, c("key", "median_promoter_methyl" , "methyl_promoter_entropy", 
                                                     "nCpGs_promoter_observed", 
                                                     "nGCs_promoter_expected", "nCpGs_promoter_expected",
@@ -40,10 +41,10 @@ methyl_rate_dt <- rbindlist(methyl_rate_dt_ls, idcol = "sample")
 
 
 
-
+#make standard gene ids 
 #methyl_rate_dt[expr_dt_melt, ]
-methyl_rate_dt[,`:=`(ensgene = gsub(".*ENSG","ENSG",key))][,`:=`(ensgene = gsub("\\+|\\-*$","",ensgene))]
-setkey(methyl_rate_dt, ensgene, sample)
+methyl_rate_dt[,`:=`(gene.id = gsub(".*ENSG","ENSG",key))][,`:=`(gene.id = gsub("\\+|\\-*$","",gene.id))]
+setkey(methyl_rate_dt, gene.id, sample)
 
 
 ##########################################################################################################################
@@ -52,19 +53,24 @@ setkey(methyl_rate_dt, ensgene, sample)
 ### To do: merge with expression data in different script
 
 
-
-
+methyl_rate_dt[,.N,by=sample]
+# opt$input_expression
+#expr_dt <- fread(opt$input_expression)
 readExpData <- function(path=NULL, gene_col = "gene.id", methyl_rate_data=methyl_rate_dt,
                     rename_samples = TRUE, 
-                    old_names=c("P_1", "P_2","P_3","P_4","P_5","P_6"), 
-                    new_names=c("BRCA_13135_P_1", "BRCA_13135_P_2","BRCA_13135_P_3","BRCA_13135_P_4","BRCA_13135_P_5","BRCA_13135_P_6")){
+                    # old_names=c("P_1", "P_2","P_3","P_4","P_5","P_6"), 
+                    # old_names=c("P_1", "P_2","P_3","P_4","P_5","P_6"), 
+                    old_names=c("Parp_1", "Parp_2","Parp_3","Ctrl_4","Ctrl_6"),
+                    new_names=c("BRCA_13135_Parp_1", "BRCA_13135_P_2","BRCA_13135_P_3","BRCA_13135_P_4","BRCA_13135_P_6")
+                    ){
+
 expr_dt <- fread(path)
 #names(expr_dt)[6] <- "gene.id"
 #print(gene_col)
-if(!any(names(expr_dt) %like% gene_col)){
-  print("renaming gene column as ensgene; thus esemble gene id.version number")
-  setnames(expr_dt, get(gene_col), "ensgene")
-  }
+# if(!any(names(expr_dt) %like% gene_col)){
+#   print("renaming gene column as ensgene; thus esemble gene id.version number")
+#   setnames(expr_dt, get(gene_col), "ensgene")
+#   }
 #optional rename sample  names
 if(rename_samples){
     #expr_dt_melt[,`:=`(sample = paste0("BRCA_13135_", sample))]
@@ -73,22 +79,22 @@ if(rename_samples){
 
 #print(head(expr_dt))
 #convert expression data to long format
-expr_dt_melt <- melt(expr_dt, id.vars = "ensgene", variable.name = "sample", value.name = "Gene_expr")
+expr_dt_melt <- melt(expr_dt, id.vars = "gene.id", variable.name = "sample", value.name = "Gene_expr")
 #unique(expr_dt_melt$sample)
-setkey(expr_dt_melt, ensgene, sample)
+setkey(expr_dt_melt, gene.id, sample)
 #merge expression and methylation data
 
 
-print(head(expr_dt))
-print(head(methyl_rate_data))
+# print(head(expr_dt))
+# print(head(methyl_rate_data))
 methyl_rate_and_exprs_dt <- methyl_rate_data[expr_dt_melt, nomatch = NULL] #merge on methylation rate and gene expression
 #methyl_rate_dt[198086,]
-key(methyl_rate_and_exprs_dt)
-setkey(methyl_rate_and_exprs_dt, ensgene, sample)
+# key(methyl_rate_and_exprs_dt)
+setkey(methyl_rate_and_exprs_dt, gene.id, sample)
 return(methyl_rate_and_exprs_dt)
 }
 
-methyl_rate_and_exprs_dt <- readExpData(path=opt$input_expression, gene_col = "ensgene")
+methyl_rate_and_exprs_dt <- readExpData(path=opt$input_expression, gene_col = "gene.id")
 
 
 #find correlation between genes and methylation
@@ -138,9 +144,9 @@ plt_ggairs_diagnostic <- function(DT, sample_name){
     plt_ggpairs <- ggpairs(DT[,.(Gene_expr = Gene_expr, 
                                                 med_methyl=median_promoter_methyl, 
                                                 entropy_methyl = methyl_promoter_entropy, 
-                                                nCpGs_obs = nCpGs_promoter_observed, 
-                                                nGCs_exp=nGCs_promoter_expected, 
-                                                nCpGs_exp=nCpGs_promoter_expected, 
+                                                # nCpGs_obs = nCpGs_promoter_observed, 
+                                                # nGCs_exp=nGCs_promoter_expected, 
+                                                # nCpGs_exp=nCpGs_promoter_expected, 
                                                 met_prop=proportion_methyl_promoter)], 
                        lower = list(continuous = wrap("points", alpha = 0.3, size = 0.5)), 
                        diag = list(continuous = wrap("barDiag", binwidth = 0.1, alpha = 0.3, size = 0.5)), 
@@ -155,26 +161,27 @@ plt_ggairs_diagnostic <- function(DT, sample_name){
 plots_list_ggpairs <- imap(methyl_rate_and_exprs_dt_ls, ~plt_ggairs_diagnostic(DT=.x , sample_name=.y))
 #save as rds on disk
 #save plots as pdf
-pdf(file=paste0("methylation_rate_promoters_ggpairs_BRCA_parp_inhibitor.pdf"),height = 12, width = 30)
+pdf(file=paste0("methylation_rate_promoters_ggpairs_BRCA_parp_inhibitor.pdf"),height = 12, width = 15)
 print(plots_list_ggpairs)
 dev.off()
 
 
 library(ggpubr)
 func_plt_expression_methyly <- function(DT, sample_name){
-    plt_expression_methyly <- DT[,.(Gene_expr = Gene_expr, 
+    plt_expression_methyly <- DT[,.(Gene_expr = log10(Gene_expr + 1), 
                                                 med_methyl=median_promoter_methyl, 
                                                 entropy_methyl = methyl_promoter_entropy, 
                                                 nCpGs_obs = nCpGs_promoter_observed, 
                                                 nGCs_exp=nGCs_promoter_expected, 
                                                 nCpGs_exp=nCpGs_promoter_expected, 
                                                 met_prop=proportion_methyl_promoter)] %>% 
-                                                ggscatter( x="Gene_expr", y="med_methyl",
+                                ggscatter( x="Gene_expr", y="med_methyl",
    #add = "reg.line",  # Add regressin line
-   add.params = list(color = "blue", fill = "lightgray"), conf.int = TRUE) + 
-   stat_cor(method = "pearson", label.x = 10000, label.y = 0.7) + 
-    labs(title = paste0("Gene Promoter Methylation activity - ", sample_name))
-    
+   add.params = list(color = "blue", fill = "lightgray"), conf.int = TRUE) +     labs(title = paste0("Gene Promoter Methylation activity - ", sample_name))
+
+#    stat_cor(method = "pearson", label.x = 10000, label.y = 0.7) + 
+       #coord_trans(x = "log10")+
+
     return(plt_expression_methyly)
 }
 plots_list_expr_meth <- imap(methyl_rate_and_exprs_dt_ls, ~func_plt_expression_methyly(DT=.x , sample_name=.y))

@@ -214,3 +214,26 @@ Rscript {params.TE_pp_scripts} --nReads 3 --bedfile {params.bedfiles} --statsFil
 #     shell:
 #         "bash {params.split_chr_script} {wildcards.samples} {input.input_file_from_config} {params.dir} &> {log}"
 
+
+
+
+
+################################
+################################
+##TODOS: gather all files
+# rule gather_files:
+#     input:
+#         aggregate_stat_data=expand("results/addHeader/{samples}/data/{samples}.chr{chr}.per_read_modified_base_calls.header.txt", chr=config["chrs"], allow_missing=True),
+#         methyl_rate_prom_data=expand("results/gene_promoters/{samples}/chr{chr}/{samples}.chr{chr}.methylation_gene_promoters_metrics.txt", chr=config["chrs"], allow_missing=True)
+#     output:
+#         aggregate_stat_merged="results/gather_files/{samples}/{samples}.data_aggregate_stats_all_chroms.txt",
+#         merged_methyl_rate_data="results/gather_files/{samples}/{samples}.data_methylation_gene_promoters_metrics_all_chroms.txt"
+#     params:
+#         gatherFilesScript=config["combineStats_files"],
+#         awk_arg=r"""-vFS="\t" -vOFS="\t" FNR!=1"""
+#     log:
+#        "logs/gather_files/{samples}.log"
+#     run:
+#        shell("awk {params.awk_arg} {input.aggregate_stat_data} > {output.aggregate_stat_merged}")
+#        shell("awk {params.awk_arg} {input.methyl_rate_prom_data} > {output.merged_methyl_rate_data}")
+# #    shell: "cat {input} > {output} 2> {log}" #this works but you end up with 
