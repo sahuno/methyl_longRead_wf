@@ -155,26 +155,22 @@ rule gather_files:
         merged_methyl_rate_data="results/gather_files/{samples}/{samples}.data_methylation_gene_promoters_metrics_all_chroms.txt"
     params:
         gatherFilesScript=config["combineStats_files"],
-        awk_arg=r"""-vFS="\t" -vOFS="\t" FNR!=1"""
+        awk_arg=r"""BEGIN {FS=OFS="\t"} NR==1 || FNR!=1"""
     log:
        "logs/gather_files/{samples}.log"
     shell:
         """
-        HEADER_prom=$(head -n 1 {input.methyl_rate_prom_data[0]})  # Use the header from the first input file
-        awk {params.awk_arg} {input.methyl_rate_prom_data}  > {output.merged_methyl_rate_data}.tmp
-        echo $HEADER_prom | cat - {output.merged_methyl_rate_data}.tmp > {output.merged_methyl_rate_data}
-        rm {output.merged_methyl_rate_data}.tmp
-
-        HEADER_agg_stats=$(head -n 1 {input.aggregate_stat_data[0]})  # Use the header from the first input file
-        awk {params.awk_arg} {input.aggregate_stat_data} > {output.aggregate_stat_merged}.tmp
-        echo $HEADER_agg_stats | cat - {output.aggregate_stat_merged}.tmp > {output.aggregate_stat_merged}
-        rm {output.aggregate_stat_merged}.tmp
+        awk {params.awk_arg} {input.methyl_rate_prom_data} > {output.merged_methyl_rate_data}
+        awk {params.awk_arg} {input.aggregate_stat_data} > {output.aggregate_stat_merged}
         """
     #    shell("awk {params.awk_arg} {input.aggregate_stat_data} > {output.aggregate_stat_merged}")
     # #    shell("head -n 1 {input.methyl_rate_prom_data}")
     #    shell("awk {params.awk_arg} {input.methyl_rate_prom_data} > {output.merged_methyl_rate_data}")
 #    shell: "cat {input} > {output} 2> {log}" #this works but you end up with 
-
+        # HEADER_prom=$(head -n 1 {input.methyl_rate_prom_data[0]})  # Use the header from the first input file
+        # awk {params.awk_arg} {input.methyl_rate_prom_data}  > {output.merged_methyl_rate_data}.tmp
+        # echo $HEADER_prom | cat - {output.merged_methyl_rate_data}.tmp > {output.merged_methyl_rate_data}
+        # rm {output.merged_methyl_rate_data}.tmp
 
 rule plugNplay_plots_TE:
     input:
