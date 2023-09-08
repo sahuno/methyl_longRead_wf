@@ -197,16 +197,24 @@ dev.off()
 ##############################################################
 ##############################################################
 message("computing methylation statistics per gene promoter in chr", opt$chrom)
-#function to compute entropy
-compute_entropy <- function(Px){
-methyl_entropy <- -sum(Px * log2(Px))
-#log()
 
-#methyl_entropy <- mean(sum(Px * log2(Px)),na.rm = TRUE)
 
-#methyl_entropy <- 
-return(methyl_entropy)
+#Revised entropy
+compute_entropy_Avg <- function(Px){
+  OneMinusPx =  1-Px #cal prob of not methylated per spg site
+  entropy_Px_1minPx <- -(Px * log(Px)) - (OneMinusPx*log(OneMinusPx))
+  sum_methyl_entropy <- sum(entropy_Px_1minPx, na.rm = TRUE)
+  avg_methyl_entropy <- mean(entropy_Px_1minPx, na.rm = TRUE)
+  
+  return(avg_methyl_entropy)
 }
+
+#function to compute entropy
+compute_entropy_shannon <- function(Px){
+  shann_methyl_entropy <- -sum((Px * log2(Px)), na.rm = TRUE)  
+  return(shann_methyl_entropy)
+}
+
 
 compute_geom_mean <- function(x){
   #compute geometric mean of methylation values
@@ -225,7 +233,8 @@ methylation_prom <- function(dat_in){
                                     data.table::fcase(statistic >= opt$methyl_percent & number_reads >= opt$nReads,"M" , default = "U")][
                                         ,.(median_promoter_methyl = median(statistic, na.rm=TRUE), 
                                         geom_mean_promoter_methyl = compute_geom_mean(statistic), 
-                                            methyl_promoter_entropy = compute_entropy(statistic), 
+                                            methyl_promoter_entropy_Avg = compute_entropy_Avg(statistic), 
+                                            methyl_promoter_entropy_shann = compute_entropy_shannon(statistic), 
                                             nCpGs_promoter_observed = length(statistic),
                                             nGCs_promoter_expected = unique(numGCs) * 2,
                                             nCpGs_promoter_expected = unique(numCGs) * 2,
