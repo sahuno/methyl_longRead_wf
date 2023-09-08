@@ -158,11 +158,14 @@ rule gather_files:
         awk_arg=r"""BEGIN {FS=OFS="\t"} NR==1 || FNR!=1"""
     log:
        "logs/gather_files/{samples}.log"
-    shell:
-        """
-        awk {params.awk_arg} {input.methyl_rate_prom_data} > {output.merged_methyl_rate_data}
-        awk {params.awk_arg} {input.aggregate_stat_data} > {output.aggregate_stat_merged}
-        """
+    run:
+       shell("awk {params.awk_arg} {input.methyl_rate_prom_data} > {output.merged_methyl_rate_data}")
+       shell("awk {params.awk_arg} {input.aggregate_stat_data} > {output.aggregate_stat_merged}")
+
+        # """
+        # awk {params.awk_arg} {input.methyl_rate_prom_data} > {output.merged_methyl_rate_data}
+        # awk {params.awk_arg} {input.aggregate_stat_data} > {output.aggregate_stat_merged}
+        # """
     #    shell("awk {params.awk_arg} {input.aggregate_stat_data} > {output.aggregate_stat_merged}")
     # #    shell("head -n 1 {input.methyl_rate_prom_data}")
     #    shell("awk {params.awk_arg} {input.methyl_rate_prom_data} > {output.merged_methyl_rate_data}")
