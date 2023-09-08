@@ -162,12 +162,12 @@ rule gather_files:
         """
         HEADER_prom=$(head -n 1 {input.methyl_rate_prom_data[0]})  # Use the header from the first input file
         awk {params.awk_arg} {input.methyl_rate_prom_data}  > {output.merged_methyl_rate_data}.tmp
-        echo -e $HEADER_prom | cat - {output.merged_methyl_rate_data}.tmp > {output.merged_methyl_rate_data}
+        echo $HEADER_prom | cat - {output.merged_methyl_rate_data}.tmp > {output.merged_methyl_rate_data}
         rm {output.merged_methyl_rate_data}.tmp
 
         HEADER_agg_stats=$(head -n 1 {input.aggregate_stat_data[0]})  # Use the header from the first input file
         awk {params.awk_arg} {input.aggregate_stat_data} > {output.aggregate_stat_merged}.tmp
-        echo -e $HEADER_agg_stats | cat - {output.aggregate_stat_merged}.tmp > {output.aggregate_stat_merged}
+        echo $HEADER_agg_stats | cat - {output.aggregate_stat_merged}.tmp > {output.aggregate_stat_merged}
         rm {output.aggregate_stat_merged}.tmp
         """
     #    shell("awk {params.awk_arg} {input.aggregate_stat_data} > {output.aggregate_stat_merged}")
