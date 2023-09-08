@@ -39,7 +39,7 @@ names(methyl_rate_dt_ls) <- gsub(".data.*", "", basename(methyl_rate_files)) #ad
 methyl_rate_dt <- rbindlist(methyl_rate_dt_ls, idcol = "sample")
 #head(methyl_rate_dt)
 
-
+#"key"
 # geom_mean_promoter_methyl 
 # methyl_promoter_entropy_Avg
 # methyl_promoter_entropy_shann
