@@ -158,9 +158,27 @@ rule gather_files:
         awk_arg=r"""-vFS="\t" -vOFS="\t" FNR!=1"""
     log:
        "logs/gather_files/{samples}.log"
-    run:
-       shell("awk {params.awk_arg} {input.aggregate_stat_data} > {output.aggregate_stat_merged}")
-       shell("awk {params.awk_arg} {input.methyl_rate_prom_data} > {output.merged_methyl_rate_data}")
+    shell:
+        """
+        HEADER_prom=$(head -n 1 {input.methyl_rate_prom_data[0]})  # Use the header from the first input file
+        echo -e $HEADER_prom > {output.merged_methyl_rate_data}
+        for file in {input.methyl_rate_prom_data}; do
+            if [ "$file" != "{input.methyl_rate_prom_data[0]}" ]; then
+                awk {params.awk_arg} "$file" >> {output.merged_methyl_rate_data}
+            fi
+        done
+
+        HEADER_agg_stats=$(head -n 1 {input.aggregate_stat_data[0]})  # Use the header from the first input file
+        echo -e $HEADER_agg_stats > {output.aggregate_stat_merged}
+        for file in {input.aggregate_stat_data}; do
+            if [ "$file" != "{input.aggregate_stat_data[0]}" ]; then
+                awk {params.awk_arg} "$file" >> {output.aggregate_stat_merged}
+            fi
+        done
+        """
+    #    shell("awk {params.awk_arg} {input.aggregate_stat_data} > {output.aggregate_stat_merged}")
+    # #    shell("head -n 1 {input.methyl_rate_prom_data}")
+    #    shell("awk {params.awk_arg} {input.methyl_rate_prom_data} > {output.merged_methyl_rate_data}")
 #    shell: "cat {input} > {output} 2> {log}" #this works but you end up with 
 
 

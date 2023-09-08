@@ -40,6 +40,14 @@ methyl_rate_dt <- rbindlist(methyl_rate_dt_ls, idcol = "sample")
 #head(methyl_rate_dt)
 
 
+# geom_mean_promoter_methyl 
+# methyl_promoter_entropy_Avg
+# methyl_promoter_entropy_shann
+# nCpGs_promoter_observed
+# nGCs_promoter_expected
+# nCpGs_promoter_expected
+# proportion_methyl_promoter 
+
 
 #make standard gene ids 
 #methyl_rate_dt[expr_dt_melt, ]
