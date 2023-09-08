@@ -46,7 +46,7 @@ DT_subj <- makeGRangesFromDataFrame(DT_cp, start.field = "pos", end.field = "pos
 ##############################################################
 #read in gene promoters and split
 
-gene_promoters_encode1kb <- readRDS(opt$input_promoter)
+gene_promoters_encode1kb <- load(opt$input_promoter)
 #gene_promoters_encode1kb <- gene_promoters_encode1kb_proteinCoding
 #gene_promoters_encode1kb <- gene_promoters_encode1kb[gene_promoters_encode1kb$biotype == "protein_coding"]
 #unique(gene_promoters_encode1kb$biotype)
