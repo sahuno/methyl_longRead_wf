@@ -155,7 +155,7 @@ rule gather_files:
         merged_methyl_rate_data="results/gather_files/{samples}/{samples}.data_methylation_gene_promoters_metrics_all_chroms.txt"
     params:
         gatherFilesScript=config["combineStats_files"],
-        awk_arg=r"""BEGIN {FS=OFS="\t"} NR==1 || FNR!=1"""
+        awk_arg=r"""'BEGIN {{FS=OFS="\t"}} NR==1 || FNR!=1'"""
     log:
        "logs/gather_files/{samples}.log"
     run:
