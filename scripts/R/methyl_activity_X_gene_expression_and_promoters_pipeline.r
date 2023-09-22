@@ -29,11 +29,11 @@ methyl_rate_files <- list.files(opt$path_methyl_rate,
                                 recursive = TRUE)##read multiple files
 methyl_rate_dt_ls <- lapply(methyl_rate_files, function(x) fread(x)) #read merged methylation activity data
 
-#add header to file
-lapply(methyl_rate_dt_ls, function(x) setnames(x, c("key", "median_promoter_methyl" , "methyl_promoter_entropy", 
-                                                    "nCpGs_promoter_observed", 
-                                                    "nGCs_promoter_expected", "nCpGs_promoter_expected",
-                                                    "proportion_methyl_promoter", "seqnames")))
+# #add header to file
+# lapply(methyl_rate_dt_ls, function(x) setnames(x, c("key", "median_promoter_methyl" , "methyl_promoter_entropy", 
+#                                                     "nCpGs_promoter_observed", 
+#                                                     "nGCs_promoter_expected", "nCpGs_promoter_expected",
+#                                                     "proportion_methyl_promoter", "seqnames")))
 
 names(methyl_rate_dt_ls) <- gsub(".data.*", "", basename(methyl_rate_files)) #add file names
 methyl_rate_dt <- rbindlist(methyl_rate_dt_ls, idcol = "sample")
@@ -68,8 +68,8 @@ readExpData <- function(path=NULL, gene_col = "gene.id", methyl_rate_data=methyl
                     rename_samples = TRUE, 
                     # old_names=c("P_1", "P_2","P_3","P_4","P_5","P_6"), 
                     # old_names=c("P_1", "P_2","P_3","P_4","P_5","P_6"), 
-                    old_names=c("Parp_1", "Parp_2","Parp_3","Ctrl_4","Ctrl_6"),
-                    new_names=c("BRCA_13135_Parp_1", "BRCA_13135_P_2","BRCA_13135_P_3","BRCA_13135_P_4","BRCA_13135_P_6")
+                    old_names=c("Parp_1", "Parp_2","Parp_3","Ctrl_4","Ctrl_5","Ctrl_6"),
+                    new_names=c("BRCA_13135_Parp_1", "BRCA_13135_P_2","BRCA_13135_P_3","BRCA_13135_P_4","BRCA_13135_P_5","BRCA_13135_P_6")
                     ){
 
 expr_dt <- fread(path)
@@ -151,7 +151,9 @@ methyl_rate_and_exprs_dt_ls <- split(methyl_rate_and_exprs_dt,  methyl_rate_and_
 plt_ggairs_diagnostic <- function(DT, sample_name){
     plt_ggpairs <- ggpairs(DT[,.(Gene_expr = Gene_expr, 
                                                 med_methyl=median_promoter_methyl, 
-                                                entropy_methyl = methyl_promoter_entropy, 
+                                                methyl_promoter_entropy_Avg,
+                                                methyl_promoter_entropy_shann,
+                                                geom_mean_promoter_methyl,
                                                 # nCpGs_obs = nCpGs_promoter_observed, 
                                                 # nGCs_exp=nGCs_promoter_expected, 
                                                 # nCpGs_exp=nCpGs_promoter_expected, 
@@ -177,15 +179,10 @@ dev.off()
 library(ggpubr)
 func_plt_expression_methyly <- function(DT, sample_name){
     plt_expression_methyly <- DT[,.(Gene_expr = log10(Gene_expr + 1), 
-                                                med_methyl=median_promoter_methyl, 
-                                                entropy_methyl = methyl_promoter_entropy, 
-                                                nCpGs_obs = nCpGs_promoter_observed, 
-                                                nGCs_exp=nGCs_promoter_expected, 
-                                                nCpGs_exp=nCpGs_promoter_expected, 
-                                                met_prop=proportion_methyl_promoter)] %>% 
-                                ggscatter( x="Gene_expr", y="med_methyl",
+                                                geom_mean_promoter_methyl)] %>% 
+                                ggscatter( x="Gene_expr", y="geom_mean_promoter_methyl",
    #add = "reg.line",  # Add regressin line
-   add.params = list(color = "blue", fill = "lightgray"), conf.int = TRUE) +     labs(title = paste0("Gene Promoter Methylation activity - ", sample_name))
+   add.params = list(color = "blue", fill = "lightgray"), conf.int = TRUE) +     labs(title = paste0("Gene Promoter Methylation activity - ", sample_name), x="log10(Gene Expression)")
 
 #    stat_cor(method = "pearson", label.x = 10000, label.y = 0.7) + 
        #coord_trans(x = "log10")+
