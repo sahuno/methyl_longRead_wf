@@ -2,9 +2,11 @@
 #date: sept 21st 2023
 
 
+#install.packages("plyranges")
 library(data.table)
 library(optparse)
 library(janitor)
+library(ggplot2)
 #install.packages("janitor")
 #install.packages("tidyverse")
 # install.packages("tidyverse")
@@ -46,3 +48,71 @@ names(dt) <- c("chrom", "start", "end", "mod_base", "score", "strand", "start2",
 #1. keep only standard chroms; 2. create a minimal data table fro downstream and ploting
 cols_filter <- c("chrom", "start", "end", "strand","mod_base","Nvalid_cov", "fraction_modified", "Nmod", "Ncanonical")
 dt_minimal <- dt[!chrom %like% "_"][!chrom %like% "m"][,colnames(dt) %in% cols_filter, with=FALSE]
+dt_minimal[,`:=`(pos = paste0(chrom,":",end,strand))] #create id cols
+dt_minimal[,`:=`(fraction_modified = fraction_modified/100)] #use fractions instead of percentages
+#sample few data points
+#dt_s <- dt_minimal[sample(.N,100)]
+
+# dput(head(dt_s, 25))
+# dt_s[,`:=`(code = fcase(fraction_modified > opt$methyl_threshold, mod_base, rep_len(TRUE, length(mod_base)), fraction_modified))]
+
+#make methyl cutt-off vals
+message("using ", opt$methyl_threshold, " as lower bound")
+methyl_thresh <- seq(from = opt$methyl_threshold, to = 1, by=0.05)
+#create a for loop for different methylation c(0.6, 0.07, 0.8,0.) values
+
+#function to assign methyl state
+assign_methyl_state <- function(dt_func, threshold_value) {
+  dt_copy <- copy(dt_func)[, `:=`(methyl_state = fcase(fraction_modified >= threshold_value, mod_base,
+                             rep(TRUE, .N), "U"))]
+  return(dt_copy)
+}
+
+#find m and U with different trhesholds
+dt_ls <- lapply(methyl_thresh, assign_methyl_state, dt_func=dt_minimal)
+ls_names_to_append <- paste0("methyl_threshold_", methyl_thresh)
+names(dt_ls) <- paste0("methyl_threshold_", methyl_thresh) #add headers to the list
+# dt_min_Mstate <- assign_methyl_state(dt_minimal, opt$methyl_threshold) #test case for single threshold
+saveRDS(dt_ls, "sample_methyl_bed.rds")
+
+
+#############
+############################
+### plots
+############################
+#plots mean and median methylation
+# str(head(dt_ls[[1]]))
+plt_density_stats_meth <-  ggplot(dt_ls[[1]], 
+                                    aes(x=fraction_modified, color = methyl_state)) + 
+                                  geom_density() + 
+                                  theme(legend.position="bottom") + 
+                                  # facet_wrap(~methyl_state, scales = "free_x")
+                                  labs(title = paste0("density of proportions motif reads at genomic site", ls_names_to_append[1]))
+ggsave(plt_density_stats_meth, file="plot_density_mod_prop.pdf")
+
+plt_histo_stats_meth <- ggplot(dt_ls[[1]], aes(x=fraction_modified, color = methyl_state)) + 
+                  geom_histogram(alpha = 0.5, position="identity") +
+                  scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
+                  labels = scales::trans_format("log10", scales::math_format(expr = 10^.x))) + 
+                  labs(title = paste0("hist of proportions motif reads at genomic site"))+
+                  theme(legend.position="bottom")
+ggsave(plt_histo_stats_meth, file="plot_hist_mod_prop.pdf")
+
+
+plt_ecdf_stats_meth <- ggplot(dt_ls[[1]], aes(x=fraction_modified, color = methyl_state)) + 
+                                stat_ecdf() + 
+                                    labs(title = paste0("ecdf")) +
+                                        theme(legend.position="bottom")
+ggsave(plt_ecdf_stats_meth, file="plot_ecdf_mod_prob.pdf")
+
+
+
+#dot plots of methyaltion
+plot_dot_nReads_frac_mod <- ggplot(dt_ls[[1]], aes(x=fraction_modified, y=Nmod)) + 
+                             geom_point(size=1, alpha=0.3) +
+scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
+                  labels = scales::trans_format("log10", scales::math_format(expr = 10^.x))) +
+                  # scale_color_manual(values=c("#E69F00", "#56B4E9", "#999999"))  
+                  facet_wrap(~methyl_state)
+            #scale_x_continuous(breaks = seq(0, 1, 0.1))
+ggsave(file="plot_dot_nReads_frac_mod.pdf", plot = plot_dot_nReads_frac_mod, width=9, height=7)
