@@ -2,9 +2,9 @@
 	"__default__" :
 	{
 	  	"queue" : "general",
-		"mem": "24",
-		"threads" : 12,
-		"time" : "3:00",
+		"mem": "2",
+		"threads" : 32,
+		"time" : "1:00",
 		"extra" : "",
 		"latency": "10"
 	},

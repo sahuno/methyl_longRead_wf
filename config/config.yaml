@@ -5,7 +5,11 @@ promoter_file: /juno/work/greenbaum/users/ahunos/apps/methylONT/data/gene_promot
 #mm10: /juno/work/greenbaum/users/ahunos/apps/methylONT/data/gene_promoters_encode1kb_mm10_proteinCoding.rda
 TE_plotsR: scripts/R/plot_methylation_TransposableElements.r
 combineStats_files: scripts/R/mergeStats_ONT.r
+consensus_sites: scripts/R/consensus_gp3.R
 plug_play_plotsTE_R: scripts/R/plugNplay_any_granges.r
+P_samples_conse: 0.75
+nReads_conse: 5
+
 chrs:
       - 1
       - 2

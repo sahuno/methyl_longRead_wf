@@ -1,0 +1,28 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cluster nodes: 500
+Job stats:
+job                count    min threads    max threads
+---------------  -------  -------------  -------------
+build_consensus        1              1              1
+total                  1              1              1
+
+Select jobs to execute...
+
+[Sat Sep 23 18:00:55 2023]
+rule build_consensus:
+    input: /juno/work/greenbaum/users/ahunos/sandbox/results_modkit/results/modkit/D-0-1/D-0-1_modpileup_5mC.bed, /juno/work/greenbaum/users/ahunos/sandbox/results_modkit/results/modkit/D-A-3/D-A-3_modpileup_5mC.bed, /juno/work/greenbaum/users/ahunos/sandbox/results_modkit/results/modkit/D-A-2/D-A-2_modpileup_5mC.bed, /juno/work/greenbaum/users/ahunos/sandbox/results_modkit/results/modkit/D-A-1/D-A-1_modpileup_5mC.bed, /juno/work/greenbaum/users/ahunos/sandbox/results_modkit/results/modkit/D-0-2/D-0-2_modpileup_5mC.bed
+    output: results/build_consensus
+    log: logs/build_consensus/build_consensus.log
+    jobid: 0
+    reason: Missing output files: results/build_consensus
+    resources: mem_mb=32762, mem_mib=31245, disk_mb=32762, disk_mib=31245, tmpdir=<TBD>
+
+
+        Rscript /juno/work/greenbaum/users/ahunos/sandbox/results_modkit/results/modkit/D-0-1/D-0-1_modpileup_5mC.bed /juno/work/greenbaum/users/ahunos/sandbox/results_modkit/results/modkit/D-A-3/D-A-3_modpileup_5mC.bed /juno/work/greenbaum/users/ahunos/sandbox/results_modkit/results/modkit/D-A-2/D-A-2_modpileup_5mC.bed /juno/work/greenbaum/users/ahunos/sandbox/results_modkit/results/modkit/D-A-1/D-A-1_modpileup_5mC.bed /juno/work/greenbaum/users/ahunos/sandbox/results_modkit/results/modkit/D-0-2/D-0-2_modpileup_5mC.bed          5         0.75         results/build_consensus
+         &> logs/build_consensus/build_consensus.log
+        
+Error submitting jobscript (exit code 127):
+
+Exiting because a job execution failed. Look above for error message
+Complete log: .snakemake/log/2023-09-23T180054.843150.snakemake.log

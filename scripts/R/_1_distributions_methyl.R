@@ -7,13 +7,14 @@ library(data.table)
 library(optparse)
 library(janitor)
 library(ggplot2)
+library(cowplot)
 #install.packages("janitor")
 #install.packages("tidyverse")
 # install.packages("tidyverse")
 
 #get inputs from commad line
-option_list_val <- list(opt_str = make_option(c("-i","--input_file"), type="character", default="/lila/data/greenbaum/users/ahunos/apps/dorado_ont_wf/results/modkit/D-A-1/D-A-1_modpileup_5mC.bed", help = "mod base pileup file"),
-                        #opt_str = make_option(c("-i","--input_file"), type="character", default="/juno/work/greenbaum/users/ahunos/methyl_SPECTRUM/scripts/workflows/spectrum_ont_methyl/results/addHeader/Spectrum-OV-009_N/data/Spectrum-OV-009_N.chr1.per_read_modified_base_calls.header.txt", help = "per read modified base file"),
+option_list_val <- list(#opt_str = make_option(c("-i","--input_file"), type="character", default="/lila/data/greenbaum/users/ahunos/apps/dorado_ont_wf/results/modkit/D-A-1/D-A-1_modpileup_5mC.bed", help = "mod base pileup file"),
+                        opt_str = make_option(c("-i","--input_file"), type="character", default="/juno/work/greenbaum/users/ahunos/sandbox/results_modkit/results/modkit/D-A-1/D-A-1_modpileup_5mC.bed", help = "juno file"),
                         opt_str = make_option(c("-t","--methyl_threshold"), type="double", default=0.7, help = "threshold to be called methylated between 0-1"),
                         opt_str = make_option(c("--cuttOff_nReads"), type="integer", default=5, help = "# reads needed per site"),
                         opt_str = make_option(c("--data_aggregate_stats"), type="character", default=NULL, help = "5mC and 5hmC output file name .txt"),
@@ -38,6 +39,8 @@ if (is.null(opt$input_file)){
   stop("Please supply sample to work on", call.=FALSE)
 }
 
+#set global variables
+geom_text_size = 3 #plot label size
 
 
 #load files 
@@ -48,10 +51,11 @@ names(dt) <- c("chrom", "start", "end", "mod_base", "score", "strand", "start2",
 #1. keep only standard chroms; 2. create a minimal data table fro downstream and ploting
 cols_filter <- c("chrom", "start", "end", "strand","mod_base","Nvalid_cov", "fraction_modified", "Nmod", "Ncanonical")
 dt_minimal <- dt[!chrom %like% "_"][!chrom %like% "m"][,colnames(dt) %in% cols_filter, with=FALSE]
-dt_minimal[,`:=`(pos = paste0(chrom,":",end,strand))] #create id cols
+# dt_minimal[,`:=`(pos = paste0(chrom,":",end,strand))] #create id cols
 dt_minimal[,`:=`(fraction_modified = fraction_modified/100)] #use fractions instead of percentages
 #sample few data points
 #dt_s <- dt_minimal[sample(.N,100)]
+
 
 # dput(head(dt_s, 25))
 # dt_s[,`:=`(code = fcase(fraction_modified > opt$methyl_threshold, mod_base, rep_len(TRUE, length(mod_base)), fraction_modified))]
@@ -65,6 +69,11 @@ methyl_thresh <- seq(from = opt$methyl_threshold, to = 1, by=0.05)
 assign_methyl_state <- function(dt_func, threshold_value) {
   dt_copy <- copy(dt_func)[, `:=`(methyl_state = fcase(fraction_modified >= threshold_value, mod_base,
                              rep(TRUE, .N), "U"))]
+
+# #order methyl states
+# methyl_states <- unique(dt_copy$methyl_state)
+# rev_methyl_states <- rev(methyl_states)
+# dt_copy$methyl_state <- factor(dt_copy$methyl_state, levels = rev_methyl_states)
   return(dt_copy)
 }
 
@@ -73,46 +82,113 @@ dt_ls <- lapply(methyl_thresh, assign_methyl_state, dt_func=dt_minimal)
 ls_names_to_append <- paste0("methyl_threshold_", methyl_thresh)
 names(dt_ls) <- paste0("methyl_threshold_", methyl_thresh) #add headers to the list
 # dt_min_Mstate <- assign_methyl_state(dt_minimal, opt$methyl_threshold) #test case for single threshold
-saveRDS(dt_ls, "sample_methyl_bed.rds")
+# saveRDS(dt_ls, "sample_methyl_bed.rds")
 
 
 #############
 ############################
 ### plots
 ############################
+
+#compute stats of fraction modified
+dt_fracMod <- copy(dt_ls[[1]])[,list(Counts=.N, Mean=mean(fraction_modified), Max=max(fraction_modified), Min=min(fraction_modified), 
+                      Median=as.numeric(median(fraction_modified)), Std=sd(fraction_modified)),
+                      by = methyl_state]
+
+dt_Cov <- copy(dt_ls[[1]])[,list(Counts=.N, Mean=mean(Nvalid_cov), Max=max(Nvalid_cov), Min=min(Nvalid_cov), 
+                      Median=as.numeric(median(Nvalid_cov)), Std=sd(Nvalid_cov)),
+                      by = methyl_state]
+
+
 #plots mean and median methylation
 # str(head(dt_ls[[1]]))
 plt_density_stats_meth <-  ggplot(dt_ls[[1]], 
                                     aes(x=fraction_modified, color = methyl_state)) + 
                                   geom_density() + 
-                                  theme(legend.position="bottom") + 
+                                  theme(legend.position="bottom") +
+                                        geom_text(x = 0.75, y = 40, 
+                                        aes(label = paste0("\nCounts: ", Counts,
+                                        "\nRange: ", Min, "-", Max,
+                                        "\nmean: ", Mean, 
+                                      "\nmedian: ", Median,
+                                      "\nSD: ", Std)), 
+                              data = dt_fracMod, size=geom_text_size) 
+                              #+ 
                                   # facet_wrap(~methyl_state, scales = "free_x")
-                                  labs(title = paste0("density of proportions motif reads at genomic site", ls_names_to_append[1]))
-ggsave(plt_density_stats_meth, file="plot_density_mod_prop.pdf")
+                                  #labs(title = paste0("density of proportions motif reads at genomic site", ls_names_to_append[1]))
+# ggsave(plt_density_stats_meth, file="plot_density_mod_prop.pdf")
 
 plt_histo_stats_meth <- ggplot(dt_ls[[1]], aes(x=fraction_modified, color = methyl_state)) + 
                   geom_histogram(alpha = 0.5, position="identity") +
-                  scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
-                  labels = scales::trans_format("log10", scales::math_format(expr = 10^.x))) + 
-                  labs(title = paste0("hist of proportions motif reads at genomic site"))+
+                                  theme(legend.position="bottom") +
+                                        geom_text(x = 0.75, y = 40, 
+                                        aes(label = paste0("\nCounts: ", Counts,
+                                        "\nRange: ", Min, "-", Max,
+                                        "\nmean: ", Mean, 
+                                      "\nmedian: ", Median,
+                                      "\nSD: ", Std)), 
+                              data = dt_fracMod, size=geom_text_size) +
+                  # scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
+                  # labels = scales::trans_format("log10", scales::math_format(expr = 10^.x))) + 
+                  #labs(title = paste0("hist of proportions motif reads at genomic site"))+
                   theme(legend.position="bottom")
-ggsave(plt_histo_stats_meth, file="plot_hist_mod_prop.pdf")
+# ggsave(plt_histo_stats_meth, file="plot_hist_mod_prop.pdf")
 
 
 plt_ecdf_stats_meth <- ggplot(dt_ls[[1]], aes(x=fraction_modified, color = methyl_state)) + 
                                 stat_ecdf() + 
-                                    labs(title = paste0("ecdf")) +
+                                    #labs(title = paste0("ecdf")) +
                                         theme(legend.position="bottom")
-ggsave(plt_ecdf_stats_meth, file="plot_ecdf_mod_prob.pdf")
+# ggsave(plt_ecdf_stats_meth, file="plot_ecdf_mod_prob.pdf")
+#combine plots and save
+plt <- plot_grid(plt_density_stats_meth + theme(legend.position="none"), 
+  plt_histo_stats_meth+ theme(legend.position="none"),
+  plt_ecdf_stats_meth + theme(legend.position="none"), labels = c('A', 'B', 'C'))
+legend_all <- get_legend(
+plt_density_stats_meth + theme(legend.position="bottom")
+)
+plt_all <- plot_grid(plt, legend_all, ncol = 1, rel_heights = c(1, 0.1))
+
+ggsave(plt_all, file="hist_dens_ecdf_methyl.pdf")
 
 
 
 #dot plots of methyaltion
-plot_dot_nReads_frac_mod <- ggplot(dt_ls[[1]], aes(x=fraction_modified, y=Nmod)) + 
+#[sample(.N, 100000)]
+plot_dot_nReads_frac_mod <- ggplot(dt_ls[[1]] %>% dplyr::mutate(methyl_state = fct_relevel(methyl_state, c("U", "m"))), aes(x=fraction_modified, y=Nmod)) + 
                              geom_point(size=1, alpha=0.3) +
-scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
-                  labels = scales::trans_format("log10", scales::math_format(expr = 10^.x))) +
+# scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
+                  # labels = scales::trans_format("log10", scales::math_format(expr = 10^.x))) +
                   # scale_color_manual(values=c("#E69F00", "#56B4E9", "#999999"))  
-                  facet_wrap(~methyl_state)
+                  facet_wrap(~methyl_state) + theme(legend.position="bottom") +
+                                        geom_text(x = 0.75, y = 3500, 
+                                        aes(label = paste0("\nCounts: ", Counts,
+                                        "\nRange: ", Min, "-", Max,
+                                        "\nmean: ", Mean, 
+                                      "\nmedian: ", Median,
+                                      "\nSD: ", Std)), 
+                              data = dt_Cov, size=geom_text_size) 
             #scale_x_continuous(breaks = seq(0, 1, 0.1))
-ggsave(file="plot_dot_nReads_frac_mod.pdf", plot = plot_dot_nReads_frac_mod, width=9, height=7)
+# ggsave(file="plot_dot_nReads_frac_mod.pdf", plot = plot_dot_nReads_frac_mod, width=9, height=7)
+
+
+# plt_gw_line <- hDT2 %>% 
+#                 ggplot(aes(y=median_exp_mod_log_prob, x=chr_start, color =methylationState )) + 
+#                   geom_line(aes(group = 1)) + labs(title = "genomewide methylation")
+ggsave("plot_dot_nReads_frac_mod_sampled.tiff", plot = plot_dot_nReads_frac_mod, width=300, height=225, units="mm", dpi=300, compression = "lzw")
+
+
+
+# stats_df_hist_ins <- df_hist_ins %>% 
+#                         summarise(mean=round(mean(SVLEN, na.rm = TRUE), 2), 
+#                                 median=round(median(SVLEN, na.rm = TRUE),2),
+#                                 sd=round(sd(SVLEN, na.rm = TRUE), 2),
+#                                 max=round(max(SVLEN, na.rm = TRUE), 2),
+#                                 min=round(min(SVLEN, na.rm = TRUE), 2),
+#                                 counts=n())
+
+
+
+# dt_ <- copy(dt_ls[[1]])[,list(Mean=mean(Nvalid_cov), Max=max(Nvalid_cov), Min=min(Nvalid_cov), 
+#                       Median=as.numeric(median(Nvalid_cov)), Std=sd(Nvalid_cov)),
+#                       by = methyl_state]

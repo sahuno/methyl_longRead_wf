@@ -1,1 +1,7 @@
 results
+*.pdf
+*.tiff
+*.rds
+*.RDataTmp*
+*.RData
+*.stats

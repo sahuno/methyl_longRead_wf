@@ -1,0 +1,43 @@
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@ja05>
+Subject: Job 81139771: </juno/work/greenbaum/users/ahunos/apps/methyl_longRead_wf/.snakemake/tmp.vh0j9ker/s.0.build_consensus> in cluster <juno> Exited
+
+Job </juno/work/greenbaum/users/ahunos/apps/methyl_longRead_wf/.snakemake/tmp.vh0j9ker/s.0.build_consensus> was submitted from host <conifold> by user <ahunos> in cluster <juno> at Sat Sep 23 18:14:43 2023
+Job was executed on host(s) <12*ja05>, in queue <general>, as user <ahunos> in cluster <juno> at Sat Sep 23 18:15:04 2023
+</home/ahunos> was used as the home directory.
+</juno/work/greenbaum/users/ahunos/apps/methyl_longRead_wf> was used as the working directory.
+Started at Sat Sep 23 18:15:04 2023
+Terminated at Sat Sep 23 18:15:16 2023
+Results reported at Sat Sep 23 18:15:16 2023
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+/juno/work/greenbaum/users/ahunos/apps/methyl_longRead_wf/.snakemake/tmp.vh0j9ker/s.0.build_consensus
+------------------------------------------------------------
+
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time :                                   5.79 sec.
+    Max Memory :                                 -
+    Average Memory :                             -
+    Total Requested Memory :                     288.00 GB
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              6
+    Max Threads :                                21
+    Run time :                                   14 sec.
+    Turnaround time :                            33 sec.
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <cluster_20230923_181420.err> for stderr output of this job.
+

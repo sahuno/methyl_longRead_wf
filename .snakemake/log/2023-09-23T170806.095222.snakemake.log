@@ -1,0 +1,9 @@
+The flag 'directory' used in rule all is only valid for outputs, not inputs.
+Building DAG of jobs...
+InputFunctionException in rule build_consensus in file /juno/work/greenbaum/users/ahunos/apps/methyl_longRead_wf/Snakemake_methyl_analysis_from_dorado_modkit.smk, line 11:
+Error:
+  AttributeError: 'Wildcards' object has no attribute 'samples'
+Wildcards:
+
+Traceback:
+  File "/juno/work/greenbaum/users/ahunos/apps/methyl_longRead_wf/Snakemake_methyl_analysis_from_dorado_modkit.smk", line 13, in <lambda>

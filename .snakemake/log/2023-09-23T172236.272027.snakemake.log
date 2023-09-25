@@ -1,0 +1,2 @@
+SyntaxError in file /juno/work/greenbaum/users/ahunos/apps/methyl_longRead_wf/Snakemake_methyl_analysis_from_dorado_modkit.smk, line 9:
+invalid syntax. Perhaps you forgot a comma?
