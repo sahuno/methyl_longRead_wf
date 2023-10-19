@@ -1,7 +1,15 @@
 results
+sandbox
+figures_methyl
+logs
+archive
 *.pdf
 *.tiff
 *.rds
 *.RDataTmp*
+.Rhistory
 *.RData
+.snakemake
 *.stats
+*.tsv
+*.bed

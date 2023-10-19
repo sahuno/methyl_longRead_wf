@@ -2,8 +2,8 @@
 	"__default__" :
 	{
 	  	"queue" : "general",
-		"mem": "2",
-		"threads" : 32,
+		"mem": "32",
+		"threads" : 8,
 		"time" : "1:00",
 		"extra" : "",
 		"latency": "10"
@@ -12,8 +12,15 @@
 	{
 	  	"queue" : "general",
 		"mem": "36",
-		"threads" : 12,
-		"time" : "2:00"
+		"threads" : 6,
+		"time" : "1:00"
+	},
+	"sortBed" :
+	{
+	  	"queue" : "general",
+		"mem": "24",
+		"threads" : 4,
+		"time" : "1:00"
 	},
 	"addHeader" :
 	{
@@ -22,11 +29,11 @@
 		"threads" : 8,
 		"time" : "2:00"
 	},
-	"per_read_aggregate" :
+	"promoters" :
 	{
 	  	"queue" : "general",
-		"mem": "22",
-		"threads" : 12,
+		"mem": "12",
+		"threads" : 4,
 		"time" : "3:00"
 	},
 	"gather_files" :

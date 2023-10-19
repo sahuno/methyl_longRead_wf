@@ -11,9 +11,11 @@ library(tidyverse)
 
 
 option_list <- list(
-   make_option(("--path_methyl_rate"), type = "character", default="/juno/work/greenbaum/users/ahunos/methyl_SPECTRUM/scripts/workflows/methyl_PARP_BrCan/results/gather_files"),
-   make_option(("--input_expression"), type = "character", default="/juno/work/greenbaum/users/ahunos/apps/RNA-seq_DiffExpr/data/condition_PARPi_vs_CTRL/DESeq2_rlog_Transform_BlindTRUE_condition_PARPi_vs_CTRL.tsv") #results would look this way now
-#    make_option(("--input_expression"), type = "character", default="/juno/work/greenbaum/users/ahunos/rotation/data/dds_normalized_cnts_parp_inhibitor.tsv")
+   make_option(("--path_methyl_rate"), type = "character", default="/juno/work/greenbaum/users/ahunos/apps/methyl_longRead_wf/results/gather_files"),
+   make_option(("--Diff_Expr"), type = "character", default="/juno/work/greenbaum/projects/TRI_EPIGENETIC/RNASeq_DE_TriEpi/data/condition_AZCT_vs_DMSO/Dseq2Results_condition_AZCT_vs_DMSO.tsv"), #results would look this way now
+make_option(("--RNA_trans_counts"), type = "character", default="/juno/work/greenbaum/projects/TRI_EPIGENETIC/RNASeq_DE_TriEpi/data/condition_AZCT_vs_DMSO/Dseq2Results_condition_AZCT_vs_DMSO.tsv"), #results would look this way now
+
+   make_option(("--orgn"), type = "character", default="mouse")
                 )
 
 opt <- parse_args(OptionParser(option_list = option_list))
@@ -25,7 +27,7 @@ opt <- parse_args(OptionParser(option_list = option_list))
 #path_methyl_rate <- "/juno/work/greenbaum/users/ahunos/methyl_SPECTRUM/scripts/workflows/spectrum_ont_methyl/results/gather_files"
 methyl_rate_files <- list.files(opt$path_methyl_rate, 
                                 full.names = TRUE, 
-                                pattern = "*.data_methylation_gene_promoters_metrics_all_chroms.txt$",
+                                pattern = "*data_all_chroms.tsv$",
                                 recursive = TRUE)##read multiple files
 methyl_rate_dt_ls <- lapply(methyl_rate_files, function(x) fread(x)) #read merged methylation activity data
 
@@ -35,9 +37,10 @@ methyl_rate_dt_ls <- lapply(methyl_rate_files, function(x) fread(x)) #read merge
 #                                                     "nGCs_promoter_expected", "nCpGs_promoter_expected",
 #                                                     "proportion_methyl_promoter", "seqnames")))
 
-names(methyl_rate_dt_ls) <- gsub(".data.*", "", basename(methyl_rate_files)) #add file names
+names(methyl_rate_dt_ls) <- gsub(".methyl.*", "", basename(methyl_rate_files)) #add file names
 methyl_rate_dt <- rbindlist(methyl_rate_dt_ls, idcol = "sample")
 #head(methyl_rate_dt)
+# methyl_rate_dt %>% group_by(sample, gene.id) %>% summarize(n())
 
 #"key"
 # geom_mean_promoter_methyl 
@@ -51,8 +54,15 @@ methyl_rate_dt <- rbindlist(methyl_rate_dt_ls, idcol = "sample")
 
 #make standard gene ids 
 #methyl_rate_dt[expr_dt_melt, ]
-methyl_rate_dt[,`:=`(gene.id = gsub(".*ENSG","ENSG",key))][,`:=`(gene.id = gsub("\\+|\\-*$","",gene.id))]
-setkey(methyl_rate_dt, gene.id, sample)
+# if(opt$orgn == "human"){
+#     methyl_rate_dt[,`:=`(gene.id = gsub(".*ENSG","ENSG",key))][,`:=`(gene.id = gsub("\\+|\\-*$","",gene.id))]
+# setkey(methyl_rate_dt, gene.id, sample)
+# } else if (opt$orgn == "mouse"){
+#     methyl_rate_dt[,`:=`(gene.id = gsub(".*ENSMUSG","ENSMUSG",key))][,`:=`(gene.id = gsub("\\+|\\-*$","",gene.id))] 
+#     setkey(methyl_rate_dt, gene.id, sample)
+# } else {
+#     stop("organism not supported")
+# }
 
 
 ##########################################################################################################################
@@ -61,6 +71,129 @@ setkey(methyl_rate_dt, gene.id, sample)
 ### To do: merge with expression data in different script
 
 
+#deseq2 object
+DE_dt <- fread(opt$Diff_Expr)
+methyl_and_DE_dt <- methyl_rate_dt[DE_dt, on="gene.id", nomatch=NULL] #merge on methylation rate and gene expression
+fwrite(methyl_and_DE_dt, file="methyl_and_DE_dt.tsv", sep="\t", row.names = FALSE, col.names = TRUE)
+#methyl_and_DE_dt %>% dplyr::filter(gene.symbol %in% c("GAPDH", "ACTB", "B2M", "HPRT1", "RPL13A", "RPLP0", "TBP", "PPIA", "SDHA", "UBC"))
+
+#mouse; all tissues
+# https://bmcgenomics.biomedcentral.com/articles/10.1186/1471-2164-8-127/tables/1
+methyl_and_DE_dt_houseKeeping <- methyl_and_DE_dt %>% dplyr::filter(gene.symbol %in% c("Eef2", "Rpl37", "Rpl38", "Leng8", "Eif3k","proteasome (prosome, macropain) 26S subunit", "Gapdh")) %>%
+dplyr::select(c("sample","key","geom_mean_promoter_methyl",
+            "methyl_promoter_entropy_shann", "nCpGs_promoter_observed_data",
+            "nGCs_promoter_expected_ref",   "nCpGs_promoter_expected_ref",
+                "prop_methyl_in_promoter_data","log2FoldChange", "pvalue","padj")) #%>% pivot_wider(names_from = "sample", values_from = "log2FoldChange")
+
+
+write_tsv(methyl_and_DE_dt_houseKeeping, file="methyl_and_DE_dt_houseKeeping.tsv")
+methyl_and_DE_dt_houseKeeping_ls <- split(methyl_and_DE_dt_houseKeeping, methyl_and_DE_dt_houseKeeping$sample)
+#methyl_and_DE_dt_houseKeeping_ls[[1]][,-1]
+#lapply(methyl_and_DE_dt_houseKeeping_ls, function(x){x <- x %>% select(c())})
+saveRDS(methyl_and_DE_dt_houseKeeping_ls, file="methyl_and_DE_dt_houseKeeping_ls.rds")
+
+
+methyl_and_DE_dt_houseKeeping_ls_split_genes <- split(methyl_and_DE_dt_houseKeeping, methyl_and_DE_dt_houseKeeping$key)
+saveRDS(methyl_and_DE_dt_houseKeeping_ls_split_genes, file="methyl_and_DE_dt_houseKeeping_ls_split_genes.rds")
+
+write_tsv(methyl_and_DE_dt_houseKeeping_ls_split_genes[["Gapdh_ENSMUSG00000057666.18-"]] %>% dplyr::select(!c(sample,key, pvalue,padj)), 
+file="methyl_and_DE_dt_Gapdh_ENSMUSG00000057666_1.tsv")
+
+# methyl_and_DE_dt %>% dplyr::filter(nCpGs_promoter_observed_data >= 5)
+#remove genes with less than 10 CpGs
+# methyl_and_DE_dt %>% group_by(sample, gene.id) %>% summarize(n())
+#filter top genes
+# methyl_and_DE_dt[log2FoldChange > 2 & padj > 0.05][order(log2FoldChange),by = sample][, head(.SD, 2), by = sample]
+# methyl_and_DE_dt[log2FoldChange > 2 & padj > 0.05, ,by = "sample"]
+plt_expr_methyl <- function(minObservedCpGs = 10, abs_l2fc=2, p_adj=0.01, nGenes=10){
+methyl_and_DE_dt <- methyl_and_DE_dt[nCpGs_promoter_observed_data >= minObservedCpGs,]
+
+topSig_DE_UP = methyl_and_DE_dt  %>% group_by(sample) %>% 
+        dplyr::filter(log2FoldChange >= abs_l2fc & padj < p_adj) %>% 
+        arrange(desc(log2FoldChange)) %>% dplyr::slice(1:nGenes) %>% 
+        ungroup() %>%dplyr::mutate(group = "DE UP") %>% 
+        as.data.table() #%>%pull(gene.symbol) ##what is methyllation activity of top expressed genes
+
+topSig_DE_DwN =  methyl_and_DE_dt %>% group_by(sample) %>% 
+dplyr::filter(log2FoldChange <= -(abs_l2fc) & padj < p_adj) %>%
+ dplyr::slice_min(log2FoldChange, n=nGenes) %>% 
+ ungroup() %>%dplyr::mutate(group = "DE DOWN") %>% 
+ as.data.table() #what is methyllation activity of top expressed genes
+
+top_Methyl = methyl_and_DE_dt  %>% group_by(sample) %>% 
+arrange(desc(geom_mean_promoter_methyl)) %>% 
+dplyr::slice(1:nGenes) %>% ungroup() %>% 
+dplyr::mutate(group = "top methyl") %>% 
+as.data.table() #%>%pull(gene.symbol) ##what is methyllation activity of top expressed genes
+
+lowest_Methyl = methyl_and_DE_dt  %>% group_by(sample) %>% 
+arrange(desc(geom_mean_promoter_methyl)) %>% 
+dplyr::slice_min(geom_mean_promoter_methyl, n=nGenes) %>% 
+ungroup() %>%dplyr::mutate(group = "lowest methyl") %>% 
+as.data.table() #%>%pull(gene.symbol) ##what is methyllation activity of top expressed genes
+
+de_me_dt <- rbindlist(list(topSig_DE_UP, topSig_DE_DwN, top_Methyl, lowest_Methyl), fill=TRUE)
+
+library(ggrepel)
+plt_de_me <- ggplot(data=de_me_dt, 
+                aes(x=geom_mean_promoter_methyl, 
+                    y= log2FoldChange, 
+                    color=group, 
+                    label=gene.symbol)) + 
+            geom_point() + 
+            facet_wrap(~sample) +   
+            geom_text_repel() +
+            theme_classic(base_size = 16) +
+            labs(title = "Promoter Methyl Vrs DExpr ", 
+                subtitle ="Each CpG supported by >= 5 reads in 75% of cohorts",
+                x="Promoter hypergeometeric mean (>=5 CpGs in Promoter)", 
+                y=paste0("log2FC;ACZT vs DMSO, (abs(log2FC) >= 2, padj<", p_adj))
+
+ggsave(plt_de_me, file=paste0("figures_methyl/methylation_rate_promoters_DE_genes_N",nGenes,".pdf"), 
+            width = 12, height=7)
+
+
+plt_de_me_box <- ggplot(data=de_me_dt, 
+                            aes(y=geom_mean_promoter_methyl, 
+                                x=as.factor(group), fill=group,
+                                group=as.factor(group))) + 
+                geom_boxplot() + 
+                geom_jitter(aes(group=as.factor(group))) + 
+                facet_wrap(~sample) +
+                labs(title = "Promoter Methyl ", 
+                    subtitle ="Each CpG supported by >= 5 reads in 75% of cohorts",
+                        y=paste0("Promoter hypergeometeric mean (>=", minObservedCpGs," CpGs in Promoter)")) +
+geom_text_repel(aes(label=as.factor(gene.symbol), group=as.factor(group)), 
+        segment.alpha = 0, position = position_dodge(width = 0.7)) 
+
+ggsave(plt_de_me_box, file=paste0("figures_methyl/methylation_rate_promoters_DE_genes_box_N",nGenes,".pdf"), width = 12, height=7)  
+}
+
+nGenesSim <- seq(from=10, to=100, by=5)
+lapply(nGenesSim, function(x) {plt_expr_methyl(minObservedCpGs = 10, abs_l2fc=2, p_adj=0.05, nGenes=x)})
+# plt_expr_methyl(minObservedCpGs = 10, abs_l2fc=2, p_adj=0.01, nGenes=10)
+
+
+##global methylation rate
+plt_global_methyl <- ggplot(data=methyl_and_DE_dt, 
+                            aes(y=geom_mean_promoter_methyl, 
+                                x=as.factor(sample), 
+                                # fill=sample,
+                                group=as.factor(sample))) + 
+                geom_boxplot() + 
+                # geom_jitter(aes(group=as.factor(sample))) + 
+                # facet_wrap(~sample) +
+                labs(title = "Promoter Methyl ", 
+                    subtitle ="Each CpG supported by >= 5 reads in 75% of cohorts",
+                        y="Promoter hypergeometeric mean (>=10 CpGs in Promoter)") 
+ggsave(plt_global_methyl, file=paste0("figures_methyl/global_methylation_rate_promoters",".pdf"), width = 12, height=7)  
+
+
+
+
+#########################################################################################################
+## below is code for transformed de
+#########################################################################################################
 methyl_rate_dt[,.N,by=sample]
 # opt$input_expression
 #expr_dt <- fread(opt$input_expression)
@@ -113,7 +246,9 @@ methyl_rate_and_exprs_dt <- readExpData(path=opt$input_expression, gene_col = "g
 
 #get top expressed genes
 methyl_rate_and_exprs_dt[,head(.SD, 2), by = list(sample)]
-methyl_rate_and_exprs_dt %>% arrange(desc(Gene_expr)) %>% group_by(sample) %>% slice(1:2) %>% ungroup() %>% as.data.table() #what is methyllation activity of top expressed genes
+methyl_rate_and_exprs_dt %>% arrange(desc(Gene_expr)) %>% 
+group_by(sample) %>% 
+slice(1:2) %>% ungroup() %>% as.data.table() #what is methyllation activity of top expressed genes
 # expr_dt[ensgene %like% "ENSG00000178605"] #this supports the fact that it makes sense to merge on `ensgene.version` since dseq object had `ENSG00000178605.13` & `ENSG00000178605.13_PAR_Y` in it's count matrix 
 
 
@@ -189,9 +324,9 @@ func_plt_expression_methyly <- function(DT, sample_name){
 
     return(plt_expression_methyly)
 }
-plots_list_expr_meth <- imap(methyl_rate_and_exprs_dt_ls, ~func_plt_expression_methyly(DT=.x , sample_name=.y))
-pdf(file=paste0("methylation_rate_promoters_and_Expression_BRCA_parp_inhibitor.pdf"),width = 12, height = 9)
-print(plots_list_expr_meth)
-dev.off()
+# plots_list_expr_meth <- imap(methyl_rate_and_exprs_dt_ls, ~func_plt_expression_methyly(DT=.x , sample_name=.y))
+# pdf(file=paste0("methylation_rate_promoters_and_Expression_BRCA_parp_inhibitor.pdf"),width = 12, height = 9)
+# print(plots_list_expr_meth)
+# dev.off()
 #ggsave(plt_ggpairs, file="test_methylation_rate_promoters.pdf", width = 12, height=7)
 

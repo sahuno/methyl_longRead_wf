@@ -144,6 +144,7 @@ plt_ecdf_stats_meth <- ggplot(dt_ls[[1]], aes(x=fraction_modified, color = methy
 plt <- plot_grid(plt_density_stats_meth + theme(legend.position="none"), 
   plt_histo_stats_meth+ theme(legend.position="none"),
   plt_ecdf_stats_meth + theme(legend.position="none"), labels = c('A', 'B', 'C'))
+  
 legend_all <- get_legend(
 plt_density_stats_meth + theme(legend.position="bottom")
 )

@@ -1,0 +1,14 @@
+
+#!/bin/bash
+#BSUB -J ONTpromoters
+#BSUB -q general
+##BSUB -gpu num=2
+#BSUB -n 8
+#BSUB -R rusage[mem=42]
+#BSUB -W 1:30
+#BSUB -e ONTpromoters_%J_%I.err
+#BSUB -o ONTpromoters_%J_%I.out
+
+module load R/R-4.1.2
+
+Rscript /juno/work/greenbaum/users/ahunos/apps/methyl_longRead_wf/scripts/R/gene_promoters_with_encode_main.r

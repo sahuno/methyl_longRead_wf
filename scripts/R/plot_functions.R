@@ -7,7 +7,7 @@ return(p)
 }
 
 gglzy <- function(ggobj,file_p){
-  is.null(file_p){
+  if(is.null(file_p)){
     message("saving at current dir")
       ggsave("lzw_plot.tiff", plot = ggobj, width=300, height=225, units="mm", dpi=300, compression = "lzw")
   }else{
@@ -27,9 +27,9 @@ return(plt_density)
 }
 
 #histogram
-hist_plt <- function(data_in, x_var, y_var, groups_var){
-plt_histo <- ggplot(data_in, aes(x={{x_var}}, color = {{groups_var}})) + 
-                  geom_histogram(alpha = 0.5, position="identity") +
+hist_plt <- function(data_in, x_var, nbins = 50){
+plt_histo <- ggplot(data_in, aes(x={{x_var}})) + 
+                  geom_histogram(alpha = 0.5, position="identity", bins=nbins) +
                   theme(legend.position="bottom")
 return(plt_histo)
 }
@@ -37,7 +37,7 @@ return(plt_histo)
 
 #plot ecdf
 ecdf_plt <- function(data_in, x_var, y_var, groups_var){
-plt_ecdf <- ggplot(data_in, aes(x=x={{x_var}}, color = {{groups_var}})) + 
+plt_ecdf <- ggplot(data_in, aes(x={{x_var}}, color = {{groups_var}})) + 
                                 stat_ecdf() + 
                                         theme(legend.position="bottom")
 return(plt_ecdf)                                    

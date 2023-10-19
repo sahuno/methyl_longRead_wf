@@ -30,11 +30,28 @@ The following object is masked from ‘package:dplyr’:
 
     count
 
+
+Attaching package: ‘cowplot’
+
+The following object is masked from ‘package:lubridate’:
+
+    stamp
+
 done reading in bed files as data.table list
 renamed columns of data.table
-created wide data.table
+Saving 7 x 7 in image
+rbindlist of data.table into 1 data.table
+creating wide data.table with samples as columns filled with Nvalid_cov
 will filter for motif sites with at least 5 reads in 4 of samples
-done filtering 5 reads in 4 of samples
+done filtering at least 5 reads in 4 of total samples
 computing stats on remaining motif sites after filtering 
 writing consensus high quality motif sites to .tsv file
+writing excluded motif sites as .tsv file
 generating .bed for consensus high quality motif sites
+   chrom   start     end strand
+1:  chr1 3003225 3003226      +
+2:  chr1 3003226 3003227      -
+3:  chr1 3003338 3003339      +
+4:  chr1 3003339 3003340      -
+5:  chr1 3003378 3003379      +
+6:  chr1 3003379 3003380      -

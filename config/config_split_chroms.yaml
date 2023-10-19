@@ -1,0 +1,39 @@
+modBedmethyl: scripts/bash/make_modBedMethyl.sh
+splitChr_script: scripts/split_ONT_from_modkit_perChrom.sh
+qc_Script: scripts/R/aggregate_per_read_5mC_5hmc_main.r
+promoter_plotsR: scripts/R/gene_promoters_with_encode_main.r
+# promoter_file: /juno/work/greenbaum/users/ahunos/apps/methylONT/data/gene_promoters_encode1kb_mm10_proteinCoding.rda
+path_promoter_bed: /juno/work/greenbaum/users/ahunos/apps/methyl_longRead_wf/gene_promoters_encode1kb_mm10.sorted.bed
+intersect_script: scripts/bash/bedtools_overlaps.sh
+prom_stats: scripts/R/compute_promoter_stats.r
+#mm10: /juno/work/greenbaum/users/ahunos/apps/methylONT/data/gene_promoters_encode1kb_mm10_proteinCoding.rda
+TE_plotsR: scripts/R/plot_methylation_TransposableElements.r
+combineStats_files: scripts/R/mergeStats_ONT.r
+consensus_sites: scripts/R/consensus_gp3.R
+plug_play_plotsTE_R: scripts/R/plugNplay_any_granges.r
+P_samples_conse: 0.75
+methyl_thresh: 75
+nReads_conse: 5
+
+chrs:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
+      - 16
+      - 17
+      - 18
+      - 19
+      #- X
+      # - Y
