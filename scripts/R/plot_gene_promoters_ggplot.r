@@ -1,4 +1,8 @@
 
+#purpose: this is draft script to po plot promoters of genes with methylation data
+library(GenomicRanges)
+
+
 #remove nameless data tables
 keep = (!names(dt_ov_ls) == "")
 dt_ov_ls <- dt_ov_ls[keep]
@@ -10,9 +14,7 @@ dt_ov_ls_cp1 <- dt_ov_ls_cp[[1]]
 dt_ov_ls_cp1 <- dt_ov_ls_cp1[order(start)]
 
 dt_ov_ls_cp1_2 <- dt_ov_ls_cp[1:2]
-dt_ov_ls_cp1_2_GRlist <- lapply(dt_ov_ls_cp1_2, function(x)
-makeGRangesFromDataFrame(x, keep.extra.columns = TRUE, starts.in.df.are.0based = TRUE)
-)
+dt_ov_ls_cp1_2_GRlist <- lapply(dt_ov_ls_cp1_2, function(x){makeGRangesFromDataFrame(x, keep.extra.columns = TRUE, starts.in.df.are.0based = TRUE)})
 
 dt_ov_ls_cp1_2_GRlist <- GRangesList(dt_ov_ls_cp1_2_GRlist)
 overlaps <- findOverlaps(query = dt_ov_ls_cp1_2_GRlist[[1]], subject = out_cps[[1]])
